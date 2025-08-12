@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیسی کالا - فروشگاه آنلاین شما</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- LeafletJS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Google Fonts: Vazirmatn -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+        }
+        .nav-active {
+            color: #E53E3E; /* red-600 */
+            border-bottom: 2px solid #E53E3E;
+            padding-bottom: 4px;
+        }
+        .modal {
+            transition: opacity 0.25s ease;
+        }
+        .add-to-cart-btn:hover svg {
+            transform: scale(1.1);
+        }
+        #map { height: 300px; border-radius: 0.5rem; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div id="main-container">
+        <!-- Header Section -->
+        <header class="bg-white shadow-md sticky top-0 z-40">
+            <div class="container mx-auto px-4 py-3">
+                <div class="flex justify-between items-center">
+                    <a href="#" class="text-2xl font-bold text-red-600">سیسی کالا</a>
+                    <div class="hidden md:flex flex-grow max-w-xl mx-8">
+                        <input type="text" id="search-input" placeholder="جستجو در محصولات..." class="w-full px-4 py-2 bg-gray-100 border-2 border-gray-200 rounded-r-lg focus:outline-none focus:border-red-500 transition">
+                        <button id="search-button" class="bg-red-600 text-white px-5 py-2 rounded-l-lg hover:bg-red-700 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </button>
+                    </div>
+                    <button id="cart-icon" class="relative flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-600 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span id="cart-badge" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                    </button>
+                </div>
+            </div>
+            <nav class="bg-gray-50 border-t border-b">
+                <div class="container mx-auto px-4">
+                    <ul id="nav-links" class="flex items-center space-x-8 space-x-reverse py-2 text-gray-700 font-semibold overflow-x-auto whitespace-nowrap">
+                        <li><a href="#" class="nav-link nav-active" data-category="all">صفحه اصلی</a></li>
+                        <li><a href="#" class="nav-link" data-category="digital">کالای دیجیتال</a></li>
+                        <li><a href="#" class="nav-link" data-category="kitchen">خانه و آشپزخانه</a></li>
+                        <li><a href="#" class="nav-link" data-category="fashion">مد و پوشاک</a></li>
+                        <li><a href="#" class="nav-link" data-category="book">کتاب و لوازم تحریر</a></li>
+                        <li><a href="#" class="nav-link" data-category="beauty">زیبایی و سلامت</a></li>
+                        <li><a href="#" class="nav-link" data-category="sports">ورزش و سفر</a></li>
+                        <li><a href="#" class="nav-link" data-category="tools">ابزار و تجهیزات</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-4 py-8">
+            <section class="mb-12">
+                <div class="bg-cover bg-center h-64 md:h-80 rounded-lg shadow-lg" style="background-image: url('https://media.giphy.com/media/l41lI4bYmcsORXpza/giphy.gif');">
+                </div>
+            </section>
+
+            <section>
+                <h2 id="products-title" class="text-3xl font-bold text-gray-800 mb-6 border-r-4 border-red-500 pr-4">همه محصولات</h2>
+                <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                    <!-- Product cards will be inserted here -->
+                </div>
+            </section>
+        </main>
+        
+        <footer class="bg-white mt-12 pt-8 pb-6 border-t"><div class="container mx-auto px-4 text-center text-gray-500"><p>&copy; ۱۴۰۳ - تمامی حقوق برای سیسی کالا محفوظ است.</p></div></footer>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden opacity-0">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-full flex flex-col">
+            <div class="p-6 border-b"><div class="flex justify-between items-center"><h3 class="text-2xl font-bold">سبد خرید و ثبت سفارش</h3><button id="close-checkout-modal" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button></div></div>
+            <div id="cart-content" class="p-6 flex-grow overflow-y-auto"></div>
+            <div class="p-6 border-t bg-gray-50">
+                 <div class="mb-6"><p class="text-xl font-bold flex justify-between">مبلغ کل: <span id="cart-total-price">0 تومان</span></p></div>
+                <form id="checkout-form" novalidate>
+                    <h4 class="text-xl font-semibold mb-4">اطلاعات ارسال</h4>
+                    <div id="form-errors" class="mb-4"></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <input type="text" id="full-name" placeholder="نام و نام خانوادگی" class="p-2 border rounded w-full" required>
+                            <input type="text" id="national-id" placeholder="کد ملی" class="p-2 border rounded w-full" required>
+                            <input type="tel" id="phone-number" placeholder="شماره تماس" class="p-2 border rounded w-full" required>
+                            <textarea id="address" placeholder="آدرس دقیق (واحد، پلاک، کوچه)" class="p-2 border rounded w-full" rows="3" required></textarea>
+                            <input type="hidden" id="lat" name="lat"><input type="hidden" id="lng" name="lng">
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-semibold">موقعیت مکانی خود را روی نقشه مشخص کنید:</label>
+                            <div id="map"></div>
+                        </div>
+                    </div>
+                    <button type="submit" id="proceed-to-payment-btn" class="w-full mt-6 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition disabled:bg-gray-400">ادامه و پرداخت</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zarinpal Simulated Payment Page -->
+    <div id="zarinpal-page" class="fixed inset-0 bg-gray-100 z-50 hidden p-4">
+        <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg mt-10">
+            <div class="bg-gray-800 p-4 rounded-t-lg flex justify-center">
+                <img src="https://www.zarinpal.com/assets/images/logo-white.svg" alt="Zarinpal Logo" class="h-8">
+            </div>
+            <div class="p-8 text-center">
+                <p class="text-gray-600 mb-2">پذیرنده:</p>
+                <p class="font-bold text-lg mb-6">فروشگاه سیسی کالا</p>
+                <div class="bg-gray-100 p-4 rounded-lg mb-6">
+                    <p class="text-lg">مبلغ قابل پرداخت:</p>
+                    <p id="payment-amount" class="text-3xl font-bold text-green-600">0 تومان</p>
+                </div>
+                <button id="pay-button" class="w-full bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition text-lg">پرداخت</button>
+                <button id="cancel-payment-button" class="w-full mt-3 text-sm text-gray-500 hover:text-red-600 transition">انصراف و بازگشت به سایت پذیرنده</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden opacity-0">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md text-center p-8"><div class="mx-auto bg-green-100 rounded-full h-20 w-20 flex items-center justify-center mb-4"><svg class="text-green-600 h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></div><h3 class="text-2xl font-bold mb-2">سفارش شما با موفقیت ثبت شد!</h3><p class="text-gray-600 mb-4">از خرید شما سپاسگزاریم.</p><p class="text-lg">کد رهگیری: <span id="order-number" class="font-bold text-red-600"></span></p><button id="close-confirmation-modal" class="w-full mt-6 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition">بستن</button></div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DATA SOURCE (100 products) ---
+        const products = [
+            // Digital (15)
+            { id: 1, name: 'گوشی موبایل سامسونگ S24 Ultra', price: 54000000, image: 'https://images.unsplash.com/photo-1707343848655-3142a0ba95a6?q=80&w=400', category: 'digital' },
+            { id: 2, name: 'لپ تاپ اپل MacBook Air M3', price: 62500000, image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=400', category: 'digital' },
+            { id: 3, name: 'هدفون بی‌سیم سونی WH-1000XM5', price: 11200000, image: 'https://images.unsplash.com/photo-1505238680356-667803448bb6?q=80&w=400', category: 'digital' },
+            { id: 4, name: 'ساعت هوشمند اپل واچ سری ۹', price: 21000000, image: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=400', category: 'digital' },
+            { id: 5, name: 'دوربین دیجیتال کانن EOS R50', price: 35700000, image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=400', category: 'digital' },
+            { id: 6, name: 'کنسول بازی PlayStation 5 Slim', price: 28000000, image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?q=80&w=400', category: 'digital' },
+            { id: 7, name: 'کیبورد گیمینگ ریزر Huntsman V2', price: 9500000, image: 'https://images.unsplash.com/photo-1601428293399-593b4a5b4c1f?q=80&w=400', category: 'digital' },
+            { id: 8, name: 'موس بی‌سیم لاجیتک MX Master 3S', price: 4800000, image: 'https://images.unsplash.com/photo-1615663249853-2d1b9a12623e?q=80&w=400', category: 'digital' },
+            { id: 9, name: 'مانیتور گیمینگ سامسونگ Odyssey G7', price: 32000000, image: 'https://images.unsplash.com/photo-1551645120-d70b9685a639?q=80&w=400', category: 'digital' },
+            { id: 10, name: 'تبلت اپل iPad Air 2024', price: 38000000, image: 'https://images.unsplash.com/photo-1585366119957-e25a4b6b7d72?q=80&w=400', category: 'digital' },
+            { id: 11, name: 'هارد اکسترنال وسترن دیجیتال 2TB', price: 3400000, image: 'https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?q=80&w=400', category: 'digital' },
+            { id: 12, name: 'اسپیکر بلوتوثی JBL Flip 6', price: 4500000, image: 'https://images.unsplash.com/photo-1575968280383-a3a8a9525712?q=80&w=400', category: 'digital' },
+            { id: 13, name: 'گوشی موبایل شیائومی 13T Pro', price: 25000000, image: 'https://images.unsplash.com/photo-1683859384369-373356795856?q=80&w=400', category: 'digital' },
+            { id: 14, name: 'کارت گرافیک RTX 4070', price: 41000000, image: 'https://images.unsplash.com/photo-1591438252948-9cf0f7ee11a3?q=80&w=400', category: 'digital' },
+            { id: 15, name: 'وبکم لاجیتک C920', price: 2900000, image: 'https://images.unsplash.com/photo-1617316379442-53908a86c2a6?q=80&w=400', category: 'digital' },
+            // Kitchen (13)
+            { id: 16, name: 'اسپرسوساز دلونگی EC685', price: 8900000, image: 'https://images.unsplash.com/photo-1565452344012-75e1a361682c?q=80&w=400', category: 'kitchen' },
+            { id: 17, name: 'مخلوط کن فیلیپس سری 5000', price: 3200000, image: 'https://images.unsplash.com/photo-1580985431055-68a885672c1a?q=80&w=400', category: 'kitchen' },
+            { id: 18, name: 'چای ساز بوش مدل TTA2201', price: 2500000, image: 'https://images.unsplash.com/photo-1622484290374-3243a14912e6?q=80&w=400', category: 'kitchen' },
+            { id: 19, name: 'سرویس قابلمه ۱۰ پارچه گرانیتی', price: 4100000, image: 'https://images.unsplash.com/photo-1598103442349-7df33b870138?q=80&w=400', category: 'kitchen' },
+            { id: 20, name: 'یخچال ساید بای ساید ال جی', price: 95000000, image: 'https://images.unsplash.com/photo-1617886903352-27793f77364b?q=80&w=400', category: 'kitchen' },
+            { id: 21, name: 'مایکروویو سامسونگ مدل 32 لیتر', price: 12500000, image: 'https://images.unsplash.com/photo-1556911220-bff31c812dba?q=80&w=400', category: 'kitchen' },
+            { id: 22, name: 'آبمیوه گیری پاناسونیک', price: 5600000, image: 'https://images.unsplash.com/photo-1601925698622-5339f4a7c030?q=80&w=400', category: 'kitchen' },
+            { id: 23, name: 'ماشین لباسشویی پاکشوما 9 کیلویی', price: 21000000, image: 'https://images.unsplash.com/photo-1626806819282-2c1dc01a5e0c?q=80&w=400', category: 'kitchen' },
+            { id: 24, name: 'جاروبرقی بوش کمپرسور', price: 14800000, image: 'https://images.unsplash.com/photo-1579552932414-888d38a45155?q=80&w=400', category: 'kitchen' },
+            { id: 25, name: 'توستر نان فیلیپس', price: 1900000, image: 'https://images.unsplash.com/photo-1526318934221-1a116fde392a?q=80&w=400', category: 'kitchen' },
+            { id: 26, name: 'سرخ کن بدون روغن فیلیپس', price: 7800000, image: 'https://images.unsplash.com/photo-1598103442349-7df33b870138?q=80&w=400', category: 'kitchen' },
+            { id: 27, name: 'ماشین ظرفشویی بوش', price: 34000000, image: 'https://images.unsplash.com/photo-1601623225438-a35903919b9a?q=80&w=400', category: 'kitchen' },
+            { id: 28, name: 'سرویس قاشق و چنگال 24 نفره', price: 6200000, image: 'https://images.unsplash.com/photo-1556911220-e1af6782872d?q=80&w=400', category: 'kitchen' },
+            // Fashion (15)
+            { id: 29, name: 'کفش ورزشی نایکی Air Max', price: 6500000, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=400', category: 'fashion' },
+            { id: 30, name: 'پیراهن مردانه آستین بلند', price: 850000, image: 'https://images.unsplash.com/photo-1603252109360-778baaf1f253?q=80&w=400', category: 'fashion' },
+            { id: 31, name: 'شلوار جین زنانه', price: 1200000, image: 'https://images.unsplash.com/photo-1602293589914-9e19a9da2173?q=80&w=400', category: 'fashion' },
+            { id: 32, name: 'مانتو زنانه بهاره', price: 1800000, image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=400', category: 'fashion' },
+            { id: 33, name: 'عینک آفتابی Ray-Ban', price: 5300000, image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=400', category: 'fashion' },
+            { id: 34, name: 'ساعت مچی مردانه کاسیو', price: 3900000, image: 'https://images.unsplash.com/photo-1612817159949-195b6eb9e31a?q=80&w=400', category: 'fashion' },
+            { id: 35, name: 'هودی مردانه کلاه دار', price: 980000, image: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=400', category: 'fashion' },
+            { id: 36, name: 'کیف دوشی زنانه چرم', price: 2100000, image: 'https://images.unsplash.com/photo-1591561954557-279411696402?q=80&w=400', category: 'fashion' },
+            { id: 37, name: 'کمربند چرم مردانه', price: 650000, image: 'https://images.unsplash.com/photo-1604176422213-93e488251554?q=80&w=400', category: 'fashion' },
+            { id: 38, name: 'کفش رسمی مردانه', price: 2400000, image: 'https://images.unsplash.com/photo-1449505978122-05f31b8a5323?q=80&w=400', category: 'fashion' },
+            { id: 39, name: 'کاپشن مردانه زمستانی', price: 2900000, image: 'https://images.unsplash.com/photo-1611312449412-6cefac5dc3e4?q=80&w=400', category: 'fashion' },
+            { id: 40, name: 'شال نخی زنانه', price: 450000, image: 'https://images.unsplash.com/photo-1561365472-53a4a754168c?q=80&w=400', category: 'fashion' },
+            { id: 41, name: 'کفش ورزشی زنانه آدیداس', price: 5800000, image: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=400', category: 'fashion' },
+            { id: 42, name: 'کراوات مردانه طرح دار', price: 550000, image: 'https://images.unsplash.com/photo-1533038601594-3306a4b1b38f?q=80&w=400', category: 'fashion' },
+            { id: 43, name: 'دامن زنانه بلند', price: 950000, image: 'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?q=80&w=400', category: 'fashion' },
+            // Book (12)
+            { id: 44, name: 'کتاب ملت عشق اثر الیف شافاک', price: 250000, image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=400', category: 'book' },
+            { id: 45, name: 'کتاب اثر مرکب دارن هاردی', price: 180000, image: 'https://images.unsplash.com/photo-1592496431122-2349e0fbc868?q=80&w=400', category: 'book' },
+            { id: 46, name: 'کتاب ۱۹۸۴ جورج اورول', price: 210000, image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=400', category: 'book' },
+            { id: 47, name: 'روان نویس یونی بال Eye', price: 95000, image: 'https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?q=80&w=400', category: 'book' },
+            { id: 48, name: 'دفتر کلاسوری پاپکو', price: 150000, image: 'https://images.unsplash.com/photo-1516414447565-b14be0adf13e?q=80&w=400', category: 'book' },
+            { id: 49, name: 'مجموعه مداد رنگی 24 رنگ فابرکاستل', price: 450000, image: 'https://images.unsplash.com/photo-1574126154517-d1e0d89ef734?q=80&w=400', category: 'book' },
+            { id: 50, name: 'کتابخانه خانگی کوچک', price: 1800000, image: 'https://images.unsplash.com/photo-1558145224-3673423c49b9?q=80&w=400', category: 'book' },
+            { id: 51, name: 'چراغ مطالعه ایکیا', price: 950000, image: 'https://images.unsplash.com/photo-1543373014-cfe4f4bc1cdf?q=80&w=400', category: 'book' },
+            { id: 52, name: 'کتاب شازده کوچولو', price: 120000, image: 'https://images.unsplash.com/photo-1618629345935-b2f5618252a1?q=80&w=400', category: 'book' },
+            { id: 53, name: 'کوله پشتی مدرسه', price: 890000, image: 'https://images.unsplash.com/photo-1553062407-98eeb6e0e5c8?q=80&w=400', category: 'book' },
+            { id: 54, name: 'تخته وایت برد مغناطیسی', price: 650000, image: 'https://images.unsplash.com/photo-1627822613861-12948a245a46?q=80&w=400', category: 'book' },
+            { id: 55, name: 'جامدادی پارچه ای', price: 110000, image: 'https://images.unsplash.com/photo-1589843382923-949400936e05?q=80&w=400', category: 'book' },
+            // Beauty (13)
+            { id: 56, name: 'ادو پرفیوم مردانه دیور Sauvage', price: 7300000, image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=400', category: 'beauty' },
+            { id: 57, name: 'کرم ضد آفتاب لاروش پوزای', price: 980000, image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=400', category: 'beauty' },
+            { id: 58, name: 'ریمل حجم دهنده اسنس', price: 350000, image: 'https://images.unsplash.com/photo-1620894589935-5550a6c6396b?q=80&w=400', category: 'beauty' },
+            { id: 59, name: 'شامپو ضد ریزش کلیر', price: 120000, image: 'https://images.unsplash.com/photo-1557053913-b5474e53db83?q=80&w=400', category: 'beauty' },
+            { id: 60, name: 'سشوار حرفه ای فیلیپس', price: 2800000, image: 'https://images.unsplash.com/photo-1621607512214-6c3f188e4b52?q=80&w=400', category: 'beauty' },
+            { id: 61, name: 'کرم مرطوب کننده نیوآ', price: 150000, image: 'https://images.unsplash.com/photo-1580856502613-343b753e9a28?q=80&w=400', category: 'beauty' },
+            { id: 62, name: 'عطر زنانه Chanel Coco Mademoiselle', price: 9500000, image: 'https://images.unsplash.com/photo-1594035918253-125869597486?q=80&w=400', category: 'beauty' },
+            { id: 63, name: 'ماشین اصلاح صورت براون', price: 4200000, image: 'https://images.unsplash.com/photo-1621605815973-20379995064a?q=80&w=400', category: 'beauty' },
+            { id: 64, name: 'مسواک برقی اورال بی', price: 1700000, image: 'https://images.unsplash.com/photo-1599426304323-97c2d7449a03?q=80&w=400', category: 'beauty' },
+            { id: 65, name: 'ست مانیکور و پدیکور', price: 600000, image: 'https://images.unsplash.com/photo-1512290923902-8a9f31c83656?q=80&w=400', category: 'beauty' },
+            { id: 66, name: 'کرم پودر استی لادر', price: 1900000, image: 'https://images.unsplash.com/photo-1620916566398-39f168a27e27?q=80&w=400', category: 'beauty' },
+            { id: 67, name: 'رژ لب مایع مک', price: 850000, image: 'https://images.unsplash.com/photo-1625093742435-6fa192b6fbce?q=80&w=400', category: 'beauty' },
+            { id: 68, name: 'فوم شستشوی صورت', price: 280000, image: 'https://images.unsplash.com/photo-1593323938213-20226c459857?q=80&w=400', category: 'beauty' },
+            // Sports (12)
+            { id: 69, name: 'دمبل بدنسازی 5 کیلویی', price: 750000, image: 'https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?q=80&w=400', category: 'sports' },
+            { id: 70, name: 'مت یوگا', price: 480000, image: 'https://images.unsplash.com/photo-1591291621224-3452b65a393b?q=80&w=400', category: 'sports' },
+            { id: 71, name: 'دوچرخه کوهستان', price: 15000000, image: 'https://images.unsplash.com/photo-1576426863848-c21f68c6aa98?q=80&w=400', category: 'sports' },
+            { id: 72, name: 'چادر مسافرتی 4 نفره', price: 3200000, image: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?q=80&w=400', category: 'sports' },
+            { id: 73, name: 'توپ فوتبال آدیداس', price: 1100000, image: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=400', category: 'sports' },
+            { id: 74, name: 'قمقمه ورزشی', price: 250000, image: 'https://images.unsplash.com/photo-1602192509154-0b70c000df82?q=80&w=400', category: 'sports' },
+            { id: 75, name: 'کوله پشتی کوهنوردی', price: 2600000, image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=400', category: 'sports' },
+            { id: 76, name: 'طناب ورزشی', price: 180000, image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=400', category: 'sports' },
+            { id: 77, name: 'راکت تنیس ویلسون', price: 4500000, image: 'https://images.unsplash.com/photo-1554062343-b3b110323413?q=80&w=400', category: 'sports' },
+            { id: 78, name: 'اسکوتر برقی', price: 8500000, image: 'https://images.unsplash.com/photo-1593711991042-0d3393333339?q=80&w=400', category: 'sports' },
+            { id: 79, name: 'میز پینگ پنگ', price: 9800000, image: 'https://images.unsplash.com/photo-1611095969948-999942201da4?q=80&w=400', category: 'sports' },
+            { id: 80, name: 'کیسه خواب', price: 1900000, image: 'https://images.unsplash.com/photo-1576725319886-53a011a5f67a?q=80&w=400', category: 'sports' },
+            // Tools (20)
+            { id: 81, name: 'دریل شارژی بوش', price: 5800000, image: 'https://images.unsplash.com/photo-1593432156497-33631b3c9b3a?q=80&w=400', category: 'tools' },
+            { id: 82, name: 'جعبه ابزار کامل', price: 3400000, image: 'https://images.unsplash.com/photo-1581155272523-a05b03c4583b?q=80&w=400', category: 'tools' },
+            { id: 83, name: 'متر لیزری', price: 2100000, image: 'https://images.unsplash.com/photo-1621905251936-05205d1a5b8a?q=80&w=400', category: 'tools' },
+            { id: 84, name: 'آچار فرانسه', price: 450000, image: 'https://images.unsplash.com/photo-1618536262429-c84535275b77?q=80&w=400', category: 'tools' },
+            { id: 85, name: 'پیچ گوشتی برقی', price: 1800000, image: 'https://images.unsplash.com/photo-1566938269886-6c53347c0bfb?q=80&w=400', category: 'tools' },
+            { id: 86, name: 'اره برقی', price: 6500000, image: 'https://images.unsplash.com/photo-1605035542449-397855a9c001?q=80&w=400', category: 'tools' },
+            { id: 87, name: 'دستکش کار ایمنی', price: 150000, image: 'https://images.unsplash.com/photo-1581154593929-a03444a7b545?q=80&w=400', category: 'tools' },
+            { id: 88, name: 'نردبان تاشو', price: 2900000, image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=400', category: 'tools' },
+            { id: 89, name: 'چسب حرارتی', price: 350000, image: 'https://images.unsplash.com/photo-1629889410313-15633542a420?q=80&w=400', category: 'tools' },
+            { id: 90, name: 'سیم سیار', price: 550000, image: 'https://images.unsplash.com/photo-1617565099542-a16b9b3985c2?q=80&w=400', category: 'tools' },
+            { id: 91, name: 'انبردست', price: 380000, image: 'https://images.unsplash.com/photo-1518610394020-0cce37cf2a38?q=80&w=400', category: 'tools' },
+            { id: 92, name: 'کاتر', price: 90000, image: 'https://images.unsplash.com/photo-1567528859333-3338de866417?q=80&w=400', category: 'tools' },
+            { id: 93, name: 'چراغ قوه', price: 600000, image: 'https://images.unsplash.com/photo-1550527311-ab2c7a15a840?q=80&w=400', category: 'tools' },
+            { id: 94, name: 'ترازوی دیجیتال', price: 850000, image: 'https://images.unsplash.com/photo-1596724335985-dec7976c0a46?q=80&w=400', category: 'tools' },
+            { id: 95, name: 'فرز انگشتی', price: 2300000, image: 'https://images.unsplash.com/photo-1629343799829-1fb68e411341?q=80&w=400', category: 'tools' },
+            { id: 96, name: 'کلاه ایمنی', price: 400000, image: 'https://images.unsplash.com/photo-1581092916346-69a7a6966212?q=80&w=400', category: 'tools' },
+            { id: 97, name: 'ست آچار آلن', price: 320000, image: 'https://images.unsplash.com/photo-1632930432439-447a11c87e5d?q=80&w=400', category: 'tools' },
+            { id: 98, name: 'دستگاه جوش اینورتر', price: 7200000, image: 'https://images.unsplash.com/photo-1618329929459-6a3a4373a2e3?q=80&w=400', category: 'tools' },
+            { id: 99, name: 'کارواش خانگی', price: 4900000, image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=400', category: 'tools' },
+            { id: 100, name: 'مجموعه مته', price: 700000, image: 'https://images.unsplash.com/photo-1580921935322-114829652518?q=80&w=400', category: 'tools' },
+        ];
+
+        // --- DOM ELEMENTS ---
+        const mainContainer = document.getElementById('main-container');
+        const productGrid = document.getElementById('product-grid');
+        const cartBadge = document.getElementById('cart-badge');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const productsTitle = document.getElementById('products-title');
+        
+        // Modal Elements
+        const cartIcon = document.getElementById('cart-icon');
+        const checkoutModal = document.getElementById('checkout-modal');
+        const closeCheckoutModalBtn = document.getElementById('close-checkout-modal');
+        const cartContent = document.getElementById('cart-content');
+        const cartTotalPriceEl = document.getElementById('cart-total-price');
+        const checkoutForm = document.getElementById('checkout-form');
+        const formErrorsEl = document.getElementById('form-errors');
+        const proceedToPaymentBtn = document.getElementById('proceed-to-payment-btn');
+        
+        // Map Elements
+        let map;
+        let marker;
+        const latInput = document.getElementById('lat');
+        const lngInput = document.getElementById('lng');
+
+        // Zarinpal Page Elements
+        const zarinpalPage = document.getElementById('zarinpal-page');
+        const paymentAmountEl = document.getElementById('payment-amount');
+        const payButton = document.getElementById('pay-button');
+        const cancelPaymentButton = document.getElementById('cancel-payment-button');
+
+        // Confirmation Modal Elements
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const orderNumberEl = document.getElementById('order-number');
+        const closeConfirmationModalBtn = document.getElementById('close-confirmation-modal');
+
+        // --- CART STATE ---
+        let cart = [];
+        let currentOrderInfo = {};
+
+        // --- FUNCTIONS ---
+        function renderProducts(productsToRender) {
+            productGrid.innerHTML = '';
+            if (productsToRender.length === 0) {
+                productGrid.innerHTML = `<p class="col-span-full text-center text-gray-500 text-xl">محصولی با این مشخصات یافت نشد.</p>`;
+                return;
+            }
+            productsToRender.forEach(product => {
+                const productCard = `
+                <div class="bg-white rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-all duration-300 flex flex-col">
+                    <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/400x400/e2e8f0/333333?text=Image+Not+Found';">
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h3 class="text-lg font-semibold text-gray-800 h-16 flex-grow">${product.name}</h3>
+                        <div class="mt-4 flex justify-between items-center">
+                            <span class="text-lg font-bold text-green-600">${product.price.toLocaleString('fa-IR')} <span class="text-sm">تومان</span></span>
+                            <button class="add-to-cart-btn bg-red-100 text-red-600 rounded-full p-2 hover:bg-red-200 transition" data-id="${product.id}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+                productGrid.insertAdjacentHTML('beforeend', productCard);
+            });
+        }
+        
+        function updateCartBadge() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartBadge.textContent = totalItems;
+        }
+
+        function renderCartSummary() {
+            cartContent.innerHTML = '';
+            if (cart.length === 0) {
+                cartContent.innerHTML = '<p class="text-center text-gray-500">سبد خرید شما خالی است.</p>';
+                cartTotalPriceEl.textContent = '0 تومان';
+                proceedToPaymentBtn.disabled = true;
+                return;
+            }
+            
+            proceedToPaymentBtn.disabled = false;
+            let totalPrice = 0;
+            cart.forEach(cartItem => {
+                const product = products.find(p => p.id === cartItem.id);
+                if (!product) return;
+
+                totalPrice += product.price * cartItem.quantity;
+                const itemEl = `
+                <div class="flex justify-between items-center mb-4 border-b pb-4">
+                    <div class="flex items-center">
+                        <img src="${product.image}" class="w-20 h-20 rounded object-cover ml-4">
+                        <div>
+                            <p class="font-semibold">${product.name}</p>
+                            <p class="text-gray-600">${product.price.toLocaleString('fa-IR')} تومان</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2 border rounded-lg px-2">
+                            <button class="cart-quantity-change text-lg text-red-500" data-id="${product.id}" data-change="-1">&minus;</button>
+                            <span class="font-bold">${cartItem.quantity}</span>
+                            <button class="cart-quantity-change text-lg text-green-500" data-id="${product.id}" data-change="1">&plus;</button>
+                        </div>
+                        <button class="remove-from-cart text-gray-500 hover:text-red-600" data-id="${product.id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                    </div>
+                </div>`;
+                cartContent.insertAdjacentHTML('beforeend', itemEl);
+            });
+            cartTotalPriceEl.textContent = totalPrice.toLocaleString('fa-IR') + ' تومان';
+            paymentAmountEl.textContent = totalPrice.toLocaleString('fa-IR') + ' تومان';
+        }
+
+        function addToCart(productId) {
+            const existingItem = cart.find(item => item.id === productId);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ id: productId, quantity: 1 });
+            }
+            updateCartBadge();
+        }
+
+        function changeCartQuantity(productId, change) {
+            const cartItem = cart.find(item => item.id === productId);
+            if (!cartItem) return;
+            
+            cartItem.quantity += change;
+
+            if (cartItem.quantity <= 0) {
+                cart = cart.filter(item => item.id !== productId);
+            }
+            updateCartBadge();
+            renderCartSummary();
+        }
+
+        function toggleModal(modal, show) {
+            if (show) {
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.add('opacity-100'), 10);
+            } else {
+                modal.classList.remove('opacity-100');
+                setTimeout(() => modal.classList.add('hidden'), 250);
+            }
+        }
+        
+        function initializeMap() {
+            if (map) return;
+            const tehranCoords = [35.6892, 51.3890];
+            map = L.map('map').setView(tehranCoords, 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            marker = L.marker(tehranCoords).addTo(map);
+            latInput.value = tehranCoords[0];
+            lngInput.value = tehranCoords[1];
+
+            map.on('click', function(e) {
+                const { lat, lng } = e.latlng;
+                marker.setLatLng(e.latlng);
+                latInput.value = lat;
+                lngInput.value = lng;
+            });
+        }
+        
+        function validateCheckoutForm() {
+            const fullName = document.getElementById('full-name').value.trim();
+            const nationalId = document.getElementById('national-id').value.trim();
+            const phoneNumber = document.getElementById('phone-number').value.trim();
+            const address = document.getElementById('address').value.trim();
+            let errors = [];
+
+            if (!fullName) errors.push('نام و نام خانوادگی الزامی است.');
+            if (!address) errors.push('آدرس الزامی است.');
+            if (!/^\d{10}$/.test(nationalId)) errors.push('کد ملی باید ۱۰ رقم و فقط شامل اعداد باشد.');
+            if (!/^09\d{9}$/.test(phoneNumber)) errors.push('شماره تماس باید با ۰۹ شروع شود و ۱۱ رقم باشد.');
+
+            formErrorsEl.innerHTML = '';
+            if (errors.length > 0) {
+                const errorList = errors.map(e => `<li class="text-red-600">${e}</li>`).join('');
+                formErrorsEl.innerHTML = `<ul class="list-disc list-inside bg-red-100 p-3 rounded-lg">${errorList}</ul>`;
+                return false;
+            }
+            return true;
+        }
+
+        function saveOrder() {
+            const orderId = `SCC-${Math.floor(Math.random() * 900000) + 100000}`;
+            const newOrder = {
+                id: orderId,
+                customer: currentOrderInfo,
+                items: cart,
+                totalPrice: cart.reduce((sum, item) => {
+                    const product = products.find(p => p.id === item.id);
+                    return sum + (product.price * item.quantity);
+                }, 0),
+                date: new Date().toISOString(),
+                status: 'New'
+            };
+
+            const existingOrders = JSON.parse(localStorage.getItem('orders')) || [];
+            existingOrders.push(newOrder);
+            localStorage.setItem('orders', JSON.stringify(existingOrders));
+            
+            orderNumberEl.textContent = orderId;
+        }
+
+        // --- EVENT LISTENERS ---
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                navLinks.forEach(l => l.classList.remove('nav-active'));
+                e.target.classList.add('nav-active');
+                const category = e.target.dataset.category;
+                productsTitle.textContent = e.target.textContent;
+                searchInput.value = '';
+                const filteredProducts = category === 'all' ? products : products.filter(p => p.category === category);
+                renderProducts(filteredProducts);
+            });
+        });
+        
+        searchButton.addEventListener('click', () => {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm));
+            productsTitle.textContent = searchTerm ? `نتایج جستجو برای: "${searchInput.value}"` : 'همه محصولات';
+            renderProducts(filteredProducts);
+        });
+        searchInput.addEventListener('keyup', (e) => { if(e.key === 'Enter') searchButton.click() });
+
+        productGrid.addEventListener('click', (e) => {
+            const button = e.target.closest('.add-to-cart-btn');
+            if (button) {
+                const productId = parseInt(button.dataset.id);
+                addToCart(productId);
+            }
+        });
+
+        cartIcon.addEventListener('click', () => {
+            renderCartSummary();
+            toggleModal(checkoutModal, true);
+            setTimeout(() => {
+                initializeMap();
+                map.invalidateSize();
+            }, 10);
+        });
+        
+        cartContent.addEventListener('click', (e) => {
+            const removeBtn = e.target.closest('.remove-from-cart');
+            if(removeBtn) {
+                const productId = parseInt(removeBtn.dataset.id);
+                cart = cart.filter(item => item.id !== productId);
+                updateCartBadge();
+                renderCartSummary();
+            }
+
+            const quantityBtn = e.target.closest('.cart-quantity-change');
+            if(quantityBtn) {
+                const productId = parseInt(quantityBtn.dataset.id);
+                const change = parseInt(quantityBtn.dataset.change);
+                changeCartQuantity(productId, change);
+            }
+        });
+
+        closeCheckoutModalBtn.addEventListener('click', () => toggleModal(checkoutModal, false));
+        
+        checkoutForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (cart.length === 0) return;
+            if (validateCheckoutForm()) {
+                currentOrderInfo = {
+                    name: document.getElementById('full-name').value,
+                    nationalId: document.getElementById('national-id').value,
+                    phone: document.getElementById('phone-number').value,
+                    address: document.getElementById('address').value,
+                    lat: document.getElementById('lat').value,
+                    lng: document.getElementById('lng').value,
+                };
+                toggleModal(checkoutModal, false);
+                mainContainer.classList.add('hidden');
+                zarinpalPage.classList.remove('hidden');
+            }
+        });
+        
+        cancelPaymentButton.addEventListener('click', () => {
+            zarinpalPage.classList.add('hidden');
+            mainContainer.classList.remove('hidden');
+            toggleModal(checkoutModal, true);
+        });
+
+        payButton.addEventListener('click', () => {
+            saveOrder();
+            zarinpalPage.classList.add('hidden');
+            mainContainer.classList.remove('hidden');
+            toggleModal(confirmationModal, true);
+            cart = [];
+            updateCartBadge();
+        });
+
+        closeConfirmationModalBtn.addEventListener('click', () => toggleModal(confirmationModal, false));
+
+        // --- INITIAL RENDER ---
+        renderProducts(products);
+    });
+    </script>
+
+</body>
+</html>
